@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './addTask.css';
 import saveTasks from '../services/saveTasks';
 import { fetchAllEmployees } from '../services/getEmployeeDetails';
+import Swal from "sweetalert2";
 
 
 const AddTask = ({ show, onHide, setTriggerRefresh, triggerRefresh, currentUser }) => {
@@ -10,15 +11,34 @@ const AddTask = ({ show, onHide, setTriggerRefresh, triggerRefresh, currentUser 
   const [tasks, setTasks] = useState({ userID: '', taskName: '', priority: 'low', assignee: '', status: 'To do', dueDate: '', description: '', remarks: '' })
 
   const [empDetails, setEmpDetails] = useState([]);
-  console.log(empDetails);
+  // console.log(empDetails);/
 
 
   const handleSubmit = async (e) => {
-    await saveTasks(tasks, e, currentUser)
-    onHide()
-    console.log("New task added succesfully");
-    setTriggerRefresh(!triggerRefresh)
+  try {
+    await saveTasks(tasks, e, currentUser);
+    onHide();
+    console.log("New task added successfully");
+    setTriggerRefresh(!triggerRefresh);
+
+    Swal.fire({
+      title: "Success!",
+      text: "New task has been added successfully.",
+      icon: "success",
+      confirmButtonText: "OK",
+      timer: 2000,
+      timerProgressBar: true,
+    });
+  } catch (error) {
+    console.error("Error adding task:", error);
+    Swal.fire({
+      title: "Error!",
+      text: "Something went wrong while adding the task.",
+      icon: "error",
+      confirmButtonText: "Try Again",
+    });
   }
+};
 
   useEffect(() => {
     const fetchUsers = async () => {

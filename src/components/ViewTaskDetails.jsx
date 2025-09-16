@@ -9,6 +9,7 @@ import { deleteTask } from '../services/deleteTask';
 import { Await } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
+import Swal from "sweetalert2";
 const adminId = import.meta.env.VITE_ADMIN_ID
 
 
@@ -31,19 +32,41 @@ const ViewTaskDetails = ({ task: initialTask, onClose, triggerRefresh, setTrigge
     });
   };
 
-  const handleDeleteTask = async (taskId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this task?");
-    if (!confirmDelete) return;
+const handleDeleteTask = async (taskId) => {
+  Swal.fire({
+    title: "Are you sure?",
+    text: "This task will be permanently deleted.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, delete it!",
+    cancelButtonText: "Cancel",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await deleteTask(taskId, companyId);
+        onClose();
+        setTriggerRefresh((prev) => !prev);
 
-    try {
-      await deleteTask(taskId,companyId);
-      onClose();
-      setTriggerRefresh(!triggerRefresh);
-    } catch (err) {
-      console.log("Failed to delete task:", err);
+        Swal.fire({
+          title: "Deleted!",
+          text: "The task has been deleted.",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } catch (err) {
+        console.log("Failed to delete task:", err);
+        Swal.fire({
+          title: "Error!",
+          text: "Failed to delete the task.",
+          icon: "error",
+        });
+      }
     }
-  };
-
+  });
+};
 
 
   useEffect(() => {
